@@ -34,8 +34,6 @@ function ListaKredita() {
             data = data.concat(notApprovedData?.map(kredit => ({ ...kredit, status: 'ne odobren' })));
             data = data.concat(approvedData?.map(kredit => ({ ...kredit, status: 'odobren' })));
 
-           
-            
             setKrediti(data);
             setKredit(approvedData);
             console.log(data);
@@ -49,18 +47,17 @@ function ListaKredita() {
 
     const handleRedClick = (kredit: Kredit) => {
         localStorage.setItem('selectedKredit', JSON.stringify(kredit));
-        
-        if(kredit.status != 'ne odobren')
-            {
-                navigate(`/pojedinacniKredit`);
-            }
+
+        if (kredit?.status != 'ne odobren') {
+            navigate(`/pojedinacniKredit`);
+        }
     };
 
     return (
         <div>
             {zaposlen ? <div><Zaposlen />
-            <Tabela krediti={krediti2} onClickRed={handleRedClick} /> </div>: <div>  <NeZaposlen /> <Tabela krediti={krediti} onClickRed={handleRedClick} /> </div>}
-            
+                <Tabela krediti={krediti2} onClickRed={handleRedClick} /> </div> : <div>  <NeZaposlen /> <Tabela krediti={krediti} onClickRed={handleRedClick} /> </div>}
+
         </div>
     );
 }
