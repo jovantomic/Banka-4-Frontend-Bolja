@@ -40,6 +40,7 @@ const StyledTextField = styled(TextField)`
 const Verifikacija: React.FC = () => {
   const [verificationSuccess, setVerificationSuccess] = useState<boolean>(false);
   const [generatedCode, setGeneratedCode] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [emailVlasnika, setEmailVlasnika] = useState('');
 
   const sendOtpWithEmail = async () => {
@@ -47,10 +48,11 @@ const Verifikacija: React.FC = () => {
     if (user && user.sub) {
       setEmailVlasnika(user.sub)
     }
-    const res = await makeApiRequest(`${UserRoutes.generate_otp}?email=${user?.sub}`, "POST")
+    const res = await makeApiRequest(`${UserRoutes.generate_otp}?email=${user?.sub}`, "POST", {}, false, false)
     if (res) {
       setVerificationSuccess(true);
       setGeneratedCode(res);
+    } else {
     }
   }
 
@@ -61,6 +63,7 @@ const Verifikacija: React.FC = () => {
 
   React.useEffect(() => {
     document.title = "Verifikacija";
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

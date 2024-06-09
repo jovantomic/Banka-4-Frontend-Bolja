@@ -5,7 +5,7 @@ import { makeGetRequest } from "../utils/apiRequest";
 import styled from "styled-components";
 import { Account, BankRoutes, ExchangeRate } from "utils/types";
 import { Box, Button, MenuItem, TextField, Typography } from "@mui/material";
-import { Console } from "console";
+import { forEach } from "cypress/types/lodash";
 
 const StyledParagraph = styled.p`
   margin-left: 2.5px;
@@ -64,6 +64,7 @@ const FormWrapper = styled.div`
 `;
 
 type Props = {
+  setKurs: (kurs: number) => void;
   setDetaljiTransfera: (detaljiTransfera: boolean) => void;
   setIznos: (iznos: string) => void;
   setSaRacunaBrRacuna: (saRacunaBrRacuna: string) => void;
@@ -73,6 +74,7 @@ type Props = {
 };
 
 const ExchangeMainSection = ({
+  setKurs,
   setDetaljiTransfera,
   setIznos,
   setSaRacunaBrRacuna,
@@ -91,25 +93,23 @@ const ExchangeMainSection = ({
   useEffect(() => {
     fetchAccounts();
     fetchExchange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSetError = () => {
-     
-      // Provera pojedinačnih polja
-      if (!saRacuna2) {
-        setError("Morate da unesete broj računa sa kog šaljete novac.");
-      } else if (!naRacun2) {
-        setError("Morate da unesete broj računa na koji šaljete novac.");
-      } else if (!iznos2 || iznos2.trim() === '') {
-        setError("Morate da unesete iznos.");
-      } else if (/[^0-9]/.test(iznos2)) { // Provera da li je iznos2 broj
-        setError("Iznos mora biti numerička vrednost.");
-      } else {
-        console.log("AAAAAAAAAAAAAA");
-        console.log(parseFloat(iznos2.trim()));
+    // Provera pojedinačnih polja
+    if (!saRacuna2) {
+      setError("Morate da unesete broj računa sa kog šaljete novac.");
+    } else if (!naRacun2) {
+      setError("Morate da unesete broj računa na koji šaljete novac.");
+    } else if (!iznos2 || iznos2.trim() === "") {
+      setError("Morate da unesete iznos.");
+    } else if (/[^0-9]/.test(iznos2)) {
+      // Provera da li je iznos2 broj
+      setError("Iznos mora biti numerička vrednost.");
+    } else {
       setDetaljiTransfera(true);
-      }
-
+    }
   };
   const fetchExchange = async () => {
     try {
@@ -117,9 +117,7 @@ const ExchangeMainSection = ({
       if (data) {
         setExhanges(data);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    } catch (error) {}
   };
 
   const fetchAccounts = async () => {
@@ -132,9 +130,7 @@ const ExchangeMainSection = ({
       if (data) {
         setAccounts(data);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    } catch (error) {}
   };
 
   const findExchangeRate = (
@@ -142,8 +138,6 @@ const ExchangeMainSection = ({
     currency2: string | undefined
   ) => {
     if (!currency1 || !currency2) return null;
-    if (currency1 === "Srpski dinar") currency1 = "RSD";
-    if (currency2 === "Srpski dinar") currency1 = "RSD";
 
     const rate1 = exchages.find(
       (exchage) => exchage.currencyCode === currency1
@@ -153,11 +147,9 @@ const ExchangeMainSection = ({
       (exchage) => exchage.currencyCode === currency2
     )?.rate;
 
-    if (rate1 && rate2) {
-      return rate1 / rate2;
-    } else {
-      return null;
-    }
+    rate1 && rate2 && setKurs((1 / rate1) * rate2);
+    if (rate1 && rate2) return (1 / rate1) * rate2;
+    else return null;
   };
 
   return (
@@ -248,16 +240,16 @@ const ExchangeMainSection = ({
           ) : (
             <StyledParagraph style={{ fontStyle: "italic" }}>_</StyledParagraph>
           )}
-          : {findExchangeRate(saRacuna2?.currency, naRacun2?.currency)}
+          :{" "}
+          {findExchangeRate(saRacuna2?.currency, naRacun2?.currency)?.toFixed(
+            3
+          )}
         </StyledDiv>
         <StyledButtonsDiv>
-          
           <StyledButton
             type="submit"
             id="nastaviButton"
-            onClick={() =>
-              handleSetError()
-            }
+            onClick={() => handleSetError()}
           >
             Nastavi
           </StyledButton>

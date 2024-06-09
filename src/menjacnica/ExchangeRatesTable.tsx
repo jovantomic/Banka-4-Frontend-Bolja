@@ -19,13 +19,12 @@ const ExchangeRatesTable = () => {
       if (data) {
         setCurrencyRates(data);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    } catch (error) {}
   };
-//162
+  //162
   useEffect(() => {
     fetchExchange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -35,7 +34,7 @@ const ExchangeRatesTable = () => {
           <TableRow>
             <StyledHeadTableCell>Valuta</StyledHeadTableCell>
             <StyledHeadTableCell align="right">
-              Kurs u odnosu na dinar
+              Kurs u odnosu na EUR
             </StyledHeadTableCell>
           </TableRow>
         </StyledTableHead>

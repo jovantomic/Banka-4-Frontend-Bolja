@@ -1,5 +1,5 @@
-import React, { useContext, useState } from 'react';
-import { Button, TextField, Container, Typography, Box, FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material';
+import { useContext, useState } from 'react';
+import { Button, TextField, Container, Typography, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { makeApiRequest } from 'utils/apiRequest';
 import { UserRoutes } from 'utils/types';
@@ -47,11 +47,9 @@ const RegistrationPage = () => {
 
     const handleGenerateCode = async () => {
         try {
-            const result = await makeApiRequest(UserRoutes.user_generate_login, "POST", { email: userData.email }, true, true, ctx)
-            console.log(await result.text());
+            await makeApiRequest(UserRoutes.user_generate_login, "POST", { email: userData.email }, true, true, ctx)
         }
         catch (e) {
-            console.log(e);
         }
     };
 

@@ -79,17 +79,15 @@ const AccountInfoPage: React.FC = () => {
             setSredstva(sredstva);
           }
         } catch (error) {
-          console.error('Error fetching user:', error);
         }
       } else {
-        console.log("Nema podataka o nalogu u Local Storage-u.");
       }
     };
 
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  
   return (
     <PageWrapper>
       <h2>Stranica za pojedinacni racun sa pocetnim stanjima</h2>

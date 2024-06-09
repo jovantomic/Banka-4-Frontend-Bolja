@@ -1,12 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { Button, TextField, Link, Typography, Container, CssBaseline } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Button, TextField, Link, Typography } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import { makeApiRequest } from 'utils/apiRequest';
-import { UserRoutes } from 'utils/types';
+import { EmployeePermissionsV2, UserRoutes } from 'utils/types';
 import { StyledContainerLogReg } from 'utils/logRegStyles';
+import { hasPermission } from 'utils/permissions';
+import styled from 'styled-components';
 
-const url = "http://api.stamenic.work:8080/api";
+// const url = "http://api.stamenic.work:8080/api";
+
+const StyledTextField = styled(TextField)`
+    width: 480px!important;
+`
+const FieldContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+`
 
 interface DecodedToken {
     permission: number;
@@ -39,15 +51,18 @@ const LoginPage = () => {
         }
 
         let isAuthenticated = true; // Placeholder for actual authentication logic
-        let isEmployee = true; // Placeholder to determine if user is an employee
+        let isEmployee = false; // Placeholder to determine if user is an employee
+
+
         try {
             const data = await makeApiRequest(UserRoutes.user_login, "POST", { username: email, password: password }, true, true)
             const token = await data.text()
             localStorage.setItem('si_jwt', token);
             const decodedToken = jwtDecode(token) as DecodedToken;
-            if (decodedToken.permission === 0) {
-                isEmployee = false;
+            if (hasPermission(decodedToken.permission, [EmployeePermissionsV2.list_users])) {
+                isEmployee = true;
             }
+
         } catch (e) {
             isAuthenticated = false;
         }
@@ -56,9 +71,11 @@ const LoginPage = () => {
             setError('Incorrect username or password');
         } else {
             if (isEmployee) {
-                window.location.replace("/listaKorisnika");
+                navigate("/listaKorisnika");
+                window.location.reload()
             } else {
-                window.location.replace("/");
+                navigate("/");
+                window.location.reload()
             }
         }
     };
@@ -78,33 +95,35 @@ const LoginPage = () => {
                 Login
             </Typography>
             <form onSubmit={authenticate}>
-                <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="email"
-                    label="Email Address"
-                    name="email"
-                    autoComplete="email"
-                    autoFocus
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    sx={{ margin: '5px 0' }} // Reduced margin
-                />
-                <TextField
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="password"
-                    label="Password"
-                    type="password"
-                    id="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    sx={{ margin: '5px 0' }} // Reduced margin
-                />
+                <FieldContainer>
+                    <StyledTextField
+                        variant="outlined"
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="email"
+                        label="Email Address"
+                        name="email"
+                        autoComplete="email"
+                        autoFocus
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        sx={{ margin: '5px 0' }} // Reduced margin
+                    />
+                    <StyledTextField
+                        variant="outlined"
+                        required
+                        fullWidth
+                        name="password"
+                        label="Password"
+                        type="password"
+                        id="password"
+                        autoComplete="current-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        sx={{ margin: '5px 0' }} // Reduced margin
+                    />
+                </FieldContainer>
                 {error && (
                     <Typography color="error" variant="body2">
                         {error}

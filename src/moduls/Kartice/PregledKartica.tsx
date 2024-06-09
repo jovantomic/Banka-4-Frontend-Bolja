@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { BankRoutes, Kartica } from "../../utils/types";
 import { makeGetRequest } from "../../utils/apiRequest";
-import { Button, Card, List, ListItem, ListItemText, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, AppBar, Tabs, Tab } from "@mui/material";
+import { Table, TableBody, TableCell, TableRow, AppBar, Tabs, Tab } from "@mui/material";
 import { getMe } from "../../utils/getMe";
 import { ScrollContainer, StyledHeadTableCell, StyledTableCell, StyledTableHead, StyledTableRow } from "utils/tableStyles";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { Context } from "App";
 
 const StyledTabs = styled(Tabs)`
   background-color: #f2f2f2;
@@ -51,6 +52,7 @@ export default function PregledKartica() {
     const navigate = useNavigate()
     const [kartice, setKartice] = useState<Kartica[]>([]);
     const [jeZaposleni, setJeZaposleni] = useState(false);
+    const ctx = useContext(Context);
 
     useEffect(() => {
         const me = getMe();
@@ -63,6 +65,15 @@ export default function PregledKartica() {
             .catch((e) => {
                 alert("Greška pri preuzimanju kartica");
             });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        let currentUrl = new URL(window.location.href);
+        let success = currentUrl.searchParams.get('success');
+
+        if (success === '0') {
+            ctx?.setErrors(['Our Error: Greška pri kreiranju kartice']);
+        } if (success === '1') {
+            ctx?.setErrors(['Our Success: Uspešno kreirana kartica']);
+        }
     }, []);
 
     const handleRowClick = (kartica: Kartica) => {
@@ -110,7 +121,7 @@ export default function PregledKartica() {
                                     <StyledTableCell>{kartica.number}</StyledTableCell>
                                     <StyledTableCell>{kartica.type}</StyledTableCell>
                                     <StyledTableCell>{new Date(kartica.expirationDate).toLocaleDateString()}</StyledTableCell>
-                                    <StyledTableCell>{kartica.status}</StyledTableCell>
+                                    <StyledTableCell>{kartica.blocked ? 'blocked' : kartica.status}</StyledTableCell>
                                 </StyledTableRow>
                             ))
                         ) : (

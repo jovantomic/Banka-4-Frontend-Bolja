@@ -5,6 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
 import { makeGetRequest } from '../../utils/apiRequest';
 import { Context } from 'App';
+import { hasPermission } from 'utils/permissions';
+import { jwtDecode } from 'jwt-decode';
+import { EmployeePermissionsV2 } from 'utils/types';
 
 const StyledTabs = styled(Tabs)`
   background-color: #f2f2f2;
@@ -58,6 +61,10 @@ const HeadingAndButtonWrapper = styled.div`
   margin-bottom: 86px; 
 `
 
+interface DecodedToken {
+  permission: number;
+}
+
 const UserListPage: React.FC = () => {
   const [usrs, setUsrs] = useState([])
   const ctx = useContext(Context);
@@ -68,40 +75,59 @@ const UserListPage: React.FC = () => {
         const users = await makeGetRequest('/korisnik', ctx);
         setUsrs(users);
       } catch (error) {
-        console.error('Error fetching user list:', error);
       }
     };
     fetchData();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const navigate = useNavigate();
+const checkAddUserPermission = () => {
+  const token = localStorage.getItem('si_jwt');
 
-  const handleCreateUser = (event: any) => {
-    navigate(`/kreirajKorisnika`)
-  };
+  // Check if the token is null
+  if (token) {
+    const decodedToken = jwtDecode(token) as DecodedToken;
 
-  return (
-    <PageWrapper>
+    if (hasPermission(decodedToken.permission, [EmployeePermissionsV2.create_users])) {
+      return true
+    }
+    return false
+  } else {
+    // Handle the case where the token is null (optional)
+    return false
+  }
+};
 
-      <HeadingAndButtonWrapper>
-        <HeadingText>Lista Korisnika</HeadingText>
-      </HeadingAndButtonWrapper>
 
-      <TableWrapper>
-        <StyledTable>
-          <AppBar position="static" >
-            <StyledTabs value={0}>
-              <Tab label="Lista Korisnika" />
-              <ButtonTab id="dodajKorisnikaDugme" onClick={handleCreateUser}
-                label="Dodaj Korisnika" />
-            </StyledTabs>
-          </AppBar>
-          <UserList users={usrs} />
-        </StyledTable>
-      </TableWrapper>
-    </PageWrapper>
-  );
+const navigate = useNavigate();
+
+const handleCreateUser = (event: any) => {
+  navigate(`/kreirajKorisnika`)
+};
+
+return (
+  <PageWrapper>
+
+    <HeadingAndButtonWrapper>
+      <HeadingText>Lista Korisnika</HeadingText>
+    </HeadingAndButtonWrapper>
+
+    <TableWrapper>
+      <StyledTable>
+        <AppBar position="static" >
+          <StyledTabs value={0}>
+            <Tab label="Lista Korisnika" />
+            {checkAddUserPermission() && <ButtonTab id="dodajKorisnikaDugme" onClick={handleCreateUser}
+              label="Dodaj Korisnika" />}
+
+          </StyledTabs>
+        </AppBar>
+        <UserList users={usrs} />
+      </StyledTable>
+    </TableWrapper>
+  </PageWrapper>
+);
 };
 
 export default UserListPage;

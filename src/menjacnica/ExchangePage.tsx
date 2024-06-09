@@ -15,6 +15,7 @@ const ContainerStyled = styled.div`
 
 const ExchangePage = () => {
   const [iznos, setIznos] = useState<string>();
+  const [kurs, setKurs] = useState<number>(0);
   const [detaljiTransfera, setDetaljiTransfera] = useState<boolean>(false);
   const [saRacunaBrRacuna, setSaRacunaBrRacuna] = useState<string>();
   const [naRacunBrRacuna, setNaRacunBrRacuna] = useState<string>();
@@ -24,6 +25,7 @@ const ExchangePage = () => {
 
   useEffect(() => {
     fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUser = async () => {
@@ -34,35 +36,38 @@ const ExchangePage = () => {
       if (data) {
         setUser(data);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    } catch (error) {}
   };
-  console.log("detaljiTransfera: ", detaljiTransfera);
 
   return (
     <ContainerStyled>
       {detaljiTransfera ? (
         <Container>
           <TransferDetails
-            user={user}
-            setDetaljiTransfera={setDetaljiTransfera}
-            iznos={iznos}
-            saRacunaBrRacuna={saRacunaBrRacuna}
-            naRacunBrRacuna={naRacunBrRacuna}
-            saRacunaValuta={saRacunaValuta}
-            naRacunValuta={naRacunValuta}
+            {...{
+              kurs,
+              user,
+              setDetaljiTransfera,
+              iznos,
+              saRacunaBrRacuna,
+              naRacunBrRacuna,
+              naRacunValuta,
+              saRacunaValuta,
+            }}
           />
         </Container>
       ) : (
         <Container>
           <ExchangeMainSection
-            setNaRacunBrRacuna={setNaRacunBrRacuna}
-            setSaRacunaBrRacuna={setSaRacunaBrRacuna}
-            setDetaljiTransfera={setDetaljiTransfera}
-            setIznos={setIznos}
-            setSaRacunaValuta={setSaRacunaValuta}
-            setNaRacunValuta={setNaRacunValuta}
+            {...{
+              setKurs,
+              setNaRacunBrRacuna,
+              setSaRacunaBrRacuna,
+              setDetaljiTransfera,
+              setIznos,
+              setSaRacunaValuta,
+              setNaRacunValuta,
+            }}
           />
         </Container>
       )}

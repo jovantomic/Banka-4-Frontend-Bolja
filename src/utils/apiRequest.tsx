@@ -1,6 +1,5 @@
 import { jwtDecode } from "jwt-decode";
 import { getApiUrl } from "./apiUrl";
-import { Context, Dispatch, SetStateAction, createContext, useContext, useState } from "react";
 import { ContextType } from "App";
 
 
@@ -11,8 +10,6 @@ type Decoded = {
 
 
 export const getJWT = () => {
-    // const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwZXJhQGdtYWlsLnJzIiwicGVybWlzc2lvbiI6NDE5NDMwMywiaWQiOjEsImV4cCI6MTcxMDQ3NDY2MCwiaWF0IjoxNzEwNDQ1ODYwfQ.zd5ImPnm9PQkFPn6gSfyR8HgW6nX1Irw2ToW_PjhRqo2U7GFJlFI-b7ENQRqruEGlAQmsMxccANf9uwncdSHiw';
-    // localStorage.setItem('si_jwt', token);
     const token = localStorage.getItem('si_jwt')
     if (token) {
         const decoded: Decoded = jwtDecode(token);
@@ -61,8 +58,12 @@ export const makeApiRequest = async (
         });
 
         if (response.ok) {
-            const res = noJson ? response : await response.json()// fix this shit
-            return res
+            try {
+                const res = noJson ? response : await response.json()// fix this shit
+                return res
+            } catch(e){
+            }
+            return response;
         }
         if (!response.ok) {
             const contentType = response.headers.get('Content-Type');
@@ -82,11 +83,10 @@ export const makeApiRequest = async (
                 const res = await response.text();
                 ctx?.setErrors?.([...ctx?.errors, res])
                 // throw new Error(res);
+                return res
             }
         }
-        console.log('Big YAY');
     } catch (error) {
-        console.error('BIG SAD:', error);
     }
 }
 
@@ -126,6 +126,5 @@ export const makeGetRequest = async (route: string, ctx?: ContextType | null) =>
 
         return await response.json()
     } catch (error) {
-        console.error('BIG SAD:', error);
     }
 }

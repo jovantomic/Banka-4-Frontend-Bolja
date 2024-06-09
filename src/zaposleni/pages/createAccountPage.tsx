@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { TextField, Button, Alert, FormControl, InputLabel, MenuItem, Select, Grid, FormControlLabel, Checkbox, Radio, FormLabel, RadioGroup } from '@mui/material';
+import { TextField, Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { makeApiRequest, makeGetRequest } from '../../utils/apiRequest';
 import { getMe } from '../../utils/getMe';
-import { BankRoutes } from 'utils/types';
+import { BankRoutes, ExchangeRate } from 'utils/types';
 import KAlert from 'utils/alerts';
 import { Context } from 'App';
+import { RacunType } from 'korisnici/data/Racuni';
 
 const PageWrapper = styled.div`
   display: flex;
@@ -44,29 +45,6 @@ const StyledTextField = styled(TextField)`
 const StyledSelect = styled(Select)`
   background-color: white;
 `
-const FormSeparator = styled.div`
-  display: flex;
-  gap: 20px;
-`
-const FormSeparatorRow = styled.div`
-  max-width: 200px;
-`
-const CheckBoxForm = styled.div`
-  margin-bottom: 40px;
-`
-const GridContainer = styled(Grid)`
-  text-align: center ;
-  display: flex;
-  justify-content: center;
-  width: 200px;
-`
-const CheckboxTitle = styled.div`
-  font-size: 16px;
-  font-weight: 500;
-  text-align: center;
-  margin-bottom: 10px;
-`
-
 interface createAccountData {
   jmbg: string;
   tip: string;
@@ -75,30 +53,29 @@ interface createAccountData {
   currency: string[];
 }
 
+const grupeHartija = ["STOCKS", "FOREX", "OPTIONS", "FUTURES"];
+
 const CreateAccountPage: React.FC = () => {
   const [formData, setFormData] = useState<createAccountData>({
     jmbg: '',
     tip: '',
-    defaultCurrency: 'EUR',
+    defaultCurrency: '',
     currency: [],
     vrstaRacuna: '',
 
   });
-  const [valuteCheckbox, setValuteCheckbox] = useState([
-    { naziv: 'EUR', vrednost: false },
-    { naziv: 'CHF', vrednost: false },
-    { naziv: 'USD', vrednost: false },
-    { naziv: 'GBP', vrednost: false },
-    { naziv: 'JPY', vrednost: false },
-    { naziv: 'CAD', vrednost: false },
-    { naziv: 'AUD', vrednost: false }
-  ])
   const [idVlasnika, setIdVlasnika] = useState<string>('');
 
   const [fieldWarning, setFieldWarning] = useState<string>('');
   const [numbersOnlyWarning, setNumbersOnlyWarning] = useState<boolean>(false);
   const [userNotFoundWarning, setUserNotFoundWarning] = useState<boolean>(false);
   const [successPopup, setSucessPopup] = useState<boolean>(false);
+  const [maintenanceMargin, setMaintananceMargin] = useState("0");
+  const [grupaHartija, setGrupaHartija] = useState<"STOCKS" | "FOREX" | "OPTIONS" | "FUTURES">("STOCKS");
+  const [currencyRates, setCurrencyRates] = useState<ExchangeRate[]>([]);
+  const [racuni, setRacuni] = useState<Array<RacunType>>([{ naziv: "Dragos", broj: '265-0000001234123-12', raspolozivo: 100.11, valuta: "RSD" }])
+  const [selectedRacun, setSelectedRacun] = useState(0);
+  const [racun, setRacun] = useState<RacunType>({ naziv: "Dragos", broj: '265-0000001234123-12', raspolozivo: 100.11, valuta: "RSD" });
 
   const navigate = useNavigate();
   const ctx = useContext(Context);
@@ -112,20 +89,28 @@ const CreateAccountPage: React.FC = () => {
         updatedFormData = { ...updatedFormData, vrstaRacuna: urlParams?.get('vrsta') ?? '' }
         updatedFormData = { ...updatedFormData, jmbg: urlParams?.get('jmbg') ?? '' }
         setFormData(updatedFormData);
+        const rates: ExchangeRate[] = await makeGetRequest(BankRoutes.exchange);
+        setCurrencyRates(rates);
 
       } catch (error) {
-        console.error('Error fetching user:', error);
       }
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (racuni?.length > 0) {
+      setSelectedRacun(() => 0);
+      setRacun(() => racuni[0]);
+    }
+  }, [racuni]);
   const handleSumbit = async () => {
     for (const [key, value] of Object.entries(formData)) {
       if (value === '') {
         if (key !== 'vrstaRacuna') {
-          console.log(value)
+          if (formData.tip == 'marzni' && key == 'defaultCurrency')
+            continue;
           setFieldWarning(key);
           return;
         }
@@ -154,19 +139,12 @@ const CreateAccountPage: React.FC = () => {
     }
     // else if (formData.tip === 'pravni') {
     //   const res = await makeApiRequest(`/racuni/dodajPravni`, 'POST', data);
-    //   // console.log(res)
     // }
     else if (formData.tip === 'devizni') {
-      const jezici: string[] = []
-      valuteCheckbox.forEach((checkbox) => {
-        if (checkbox.vrednost) {
-          jezici.push(checkbox.naziv)
-        }
-      })
       const data = {
         vlasnik: idVlasnika,
         zaposleni: zaposleniId,
-        currency: jezici,
+        currency: formData.currency,
         defaultCurrency: formData.defaultCurrency,
         brojDozvoljenihValuta: 7
       }
@@ -174,6 +152,28 @@ const CreateAccountPage: React.FC = () => {
       if (res) {
         setSucessPopup(true)
       }
+    }
+    else if (formData.tip === 'marzni') {
+      try {
+        const data = {
+          "vlasnik": idVlasnika,
+          "valuta": racun.valuta,
+          "grupaHartija": grupaHartija,
+          "brojRacuna": racun.broj,
+          "maintenanceMargin": maintenanceMargin
+        }
+        const res = await makeApiRequest(BankRoutes.account_add_marzni, 'POST', data, false, false, ctx);
+        if (res) {
+          setSucessPopup(true)
+        }
+        else {
+          ctx?.setErrors(["Failed to create margin account. Only one margin account can be linked to an account"]);
+        }
+      }
+      catch (e) {
+        ctx?.setErrors(["MarzniRacun already exists for this user and grupaHartija"]);
+      }
+
     }
   }
 
@@ -190,10 +190,19 @@ const CreateAccountPage: React.FC = () => {
     setFormData({ ...formData, vrstaRacuna: event.target.value as string });
   };
 
-  const handleRadioChange = (event: any) => {
-    setFormData({ ...formData, defaultCurrency: event.target.value as string });
+  const handleCurrencyChange = (event: any) => {
+    const newCurrency = event.target.value as string;
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      defaultCurrency: newCurrency,
+      currency: [newCurrency]
+    }));
   };
 
+  const handleGrupaHartijaChange = (event: any) => {
+    const newGrupaHartija = event.target.value as ("STOCKS" | "FOREX" | "OPTIONS" | "FUTURES");
+    setGrupaHartija(newGrupaHartija);
+  };
 
   const handleKreiranjeKorisnika = () => {
     if (formData.tip && formData.vrstaRacuna) {
@@ -202,17 +211,15 @@ const CreateAccountPage: React.FC = () => {
       navigate(`/kreirajKorisnika?tip=${formData.tip}`);
     }
   };
-  const handleCheckboxChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const noveValute = [...valuteCheckbox];
-    noveValute[index].vrednost = event.target.checked;
-    setValuteCheckbox(noveValute);
-  };
+
 
   const handlePretragaKorisnika = async () => {
     const res = await makeGetRequest(`/korisnik/jmbg/${formData.jmbg}`, ctx);
     if (res && res.id) {
       setIdVlasnika(res.id)
       setUserNotFoundWarning(false)
+      const rac: { brojRacuna: string, raspolozivoStanje: number, currency: string }[] = await makeGetRequest(`/racuni/nadjiRacuneKorisnika/${res.id}`)
+      setRacuni(() => rac?.map(e => ({ naziv: "Racun", broj: e.brojRacuna, raspolozivo: e.raspolozivoStanje, valuta: e.currency })))
     }
     else {
       setUserNotFoundWarning(true)
@@ -240,6 +247,7 @@ const CreateAccountPage: React.FC = () => {
             <MenuItem value="tekuci">Tekuci</MenuItem>
             {/* <MenuItem value="pravni">Pravni</MenuItem> */}
             <MenuItem value="devizni">Devizni</MenuItem>
+            <MenuItem value="marzni">Marzni</MenuItem>
           </StyledSelect>
         </FormControl>
         {formData?.tip === 'tekuci' && <FormControl variant="outlined" fullWidth margin="normal">
@@ -267,13 +275,83 @@ const CreateAccountPage: React.FC = () => {
           helperText={userNotFoundWarning && "Nije pronadjen korisnik sa unetim jmbg-om"}
           margin="normal"
         />
+        {formData.tip === 'devizni' &&
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Valuta</InputLabel>
+            <Select
+              value={formData.defaultCurrency}
+              onChange={handleCurrencyChange}
+              label="Valuta"
+              id="valuta"
+            >
+              {currencyRates?.map((currency) => (
+                <MenuItem key={currency.currencyCode} id={"valutaItem" + currency.currencyCode} value={currency.currencyCode}>
+                  {currency.currencyCode}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        }
+
+
+        {(formData.tip === 'marzni' && idVlasnika) &&
+
+          <>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Povezani račun</InputLabel>
+              <Select
+                labelId="select-racun-label"
+                id="selectRacun"
+                value={selectedRacun}
+                label="Povezani račun"
+                onChange={(e) => {
+                  setSelectedRacun(Number(e.target.value))
+                  setRacun(racuni[Number(e.target.value)])
+                }}
+              >
+                {racuni?.map((racun, index) => (
+                  <MenuItem key={index} value={index}>{`${racun.naziv} - ${racun.broj} (${racun.raspolozivo} RSD)`}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Grupa hartija</InputLabel>
+              <Select
+                value={grupaHartija}
+                onChange={handleGrupaHartijaChange}
+                label="Grupa hartija"
+                id="grupahartija"
+              >
+                {grupeHartija?.map((e) => (
+                  <MenuItem key={e} id={"grupaHartijaItem" + e} value={e}>
+                    {e}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <StyledTextField
+              error={((parseFloat(maintenanceMargin) || parseFloat(maintenanceMargin) === 0) && parseFloat(maintenanceMargin) >= 0) ? false : true}
+              label="Maintenance Margin"
+              name='maintenancemargin'
+              variant="outlined"
+              value={maintenanceMargin}
+              onChange={e => setMaintananceMargin(e.target.value)}
+              fullWidth
+              helperText={((parseFloat(maintenanceMargin) || parseFloat(maintenanceMargin) === 0) && parseFloat(maintenanceMargin) >= 0) ? "" : "Morate uneti validan broj"}
+              margin="normal"
+            />
+          </>
+        }
+
         <Button variant="contained" color="primary" onClick={handlePretragaKorisnika}>
           Pretraga Korisnika
         </Button>
         <Button color="secondary" onClick={handleKreiranjeKorisnika}>
           Kreiranje Korisnika
         </Button>
-        {formData.tip === 'devizni' && <FormSeparator>
+
+        {/* {formData.tip === 'devizni' && <FormSeparator>
           <FormSeparatorRow>
             <CheckBoxForm>
               <CheckboxTitle>Valute racuna</CheckboxTitle>
@@ -294,7 +372,7 @@ const CreateAccountPage: React.FC = () => {
               <div>
                 <CheckboxTitle>Osnovna valuta</CheckboxTitle>
                 <RadioGroup
-                  defaultValue="EUR"
+                  defaultValue=""
                   onChange={handleRadioChange}
                   name="radio-buttons-group"
                 >
@@ -309,7 +387,7 @@ const CreateAccountPage: React.FC = () => {
               </div>
             </GridContainer>
           </FormSeparatorRow>
-        </FormSeparator>}
+        </FormSeparator>} */}
         <ButtonContainer>
           <StyledButton disabled={!idVlasnika} variant="contained" color="primary" onClick={handleSumbit}>
             Kreiraj

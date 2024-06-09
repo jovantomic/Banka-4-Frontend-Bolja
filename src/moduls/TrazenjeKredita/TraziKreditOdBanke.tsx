@@ -56,29 +56,26 @@ const TraziKreditStranica: React.FC = () => {
           return;
         const data = await makeGetRequest(`${BankRoutes.account_find_user_account}/${me.id}`)
         if (data) {
-          console.log(data);
           let racuni: string[] = [];
           for (const key in data) {
             let racun = data[key].brojRacuna;
-            console.log(racun);
             racuni.push(racun);
           }
-          console.log(racuni.length);
           setBankAccountNumbers(racuni); // Postavljanje stanja bankAccountNumbers
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchAccounts(); // Pozivamo funkciju odmah nakon definisanja
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
-
-  
 
 
-    
+
+
+
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string | undefined; value: unknown; checked?: boolean | undefined; }>) => {
     const { name, value, checked } = e.target;
     let parsedValue: string | number | boolean | '';
@@ -93,7 +90,7 @@ const TraziKreditStranica: React.FC = () => {
     } else {
       parsedValue = name === 'zaposlenZaStalno' && checked !== undefined ? checked : (value as string);
     }
-  
+
     //validacija 
     if (name === 'currentEmploymentPeriod' || name === 'salary' || name === 'loanTerm' || name === 'bankAccountNumber' || name === 'amount') {
       const trimmedValue = (value as string).trim();
@@ -102,7 +99,7 @@ const TraziKreditStranica: React.FC = () => {
         parsedValue = '';
       } else {
         parsedValue = parseFloat(trimmedValue);
-        
+
       }
     } else {
       parsedValue = name === 'permanentEmployee' && checked !== undefined ? checked : (value as string);
@@ -113,22 +110,22 @@ const TraziKreditStranica: React.FC = () => {
       [name as string]: name === 'zaposlenZaStalno' && checked !== undefined ? checked : parsedValue,
     }));
   };
-  
+
   const handleChange2 = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
     setPoruka(``);
-  
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
 
-  
+
   const handlePosalji = async () => {
     setLoading(true);
     // Simulacija slanja zahteva na server
-  
+
     formData.status = "Salje se";
     const allFieldsValid = Object.values(formData).every(value => value !== '');
 
@@ -141,19 +138,15 @@ const TraziKreditStranica: React.FC = () => {
 
     const data = await makeApiRequest(BankRoutes.credit_apply, "POST", formData, false, true);
     setLoading(false);
-  
+
     if (data && data.status && data.status === 200) {
       navigate(-1)
       setPoruka("USPESNO POSLATO"); // Prikazivanje poruke na stranici
     } else {
       setPoruka("GRESKA PRI SLANJU"); // Prikazivanje poruke na stranici
     }
-  
-    console.log(data);
-    // Ispisivanje trenutnog stanja forme u konzoli
-    console.log(formData);
   };
-  
+
 
   return (
     <StyledFormControl>
@@ -174,7 +167,7 @@ const TraziKreditStranica: React.FC = () => {
         </Select>
       </StyledFormControl2>
       <br />
-     
+
       <TextField
         label="Iznos kredita"
 
@@ -243,7 +236,7 @@ const TraziKreditStranica: React.FC = () => {
         value={formData.branchOffice}
         onChange={handleChange}
       />
-       {poruka && <p>{poruka}</p>}
+      {poruka && <p>{poruka}</p>}
       <br />
       <Button id="kwiknimeUwU" variant="contained" onClick={handlePosalji} disabled={loading}>Pošalji</Button>
     </StyledFormControl>

@@ -50,9 +50,9 @@ const StyledParagraph = styled.p`
 `;
 
 const provizija = 0.005;
-const kurs = 117.6926;
 
 type Props = {
+  kurs: number;
   setDetaljiTransfera: (detaljiTransfera: boolean) => void;
   iznos: string | undefined;
   saRacunaBrRacuna: string | undefined;
@@ -63,6 +63,7 @@ type Props = {
 };
 
 const TransferDetails = ({
+  kurs,
   setDetaljiTransfera,
   iznos,
   saRacunaBrRacuna,
@@ -97,6 +98,19 @@ const TransferDetails = ({
     setDetaljiTransfera(false);
   };
 
+  // const findExchangeRate = () => {
+  //   const rate1 = exchages.find(
+  //     (exchage) => exchage.currencyCode === saRacunaValuta
+  //   )?.rate;
+
+  //   const rate2 = exchages.find(
+  //     (exchage) => exchage.currencyCode === naRacunValuta
+  //   )?.rate;
+
+  //   if (rate1 && rate2 && iznos) return (parseFloat(iznos) / rate1) * rate2;
+  //   else return null;
+  // };
+
   return (
     <PageWrapper>
       <FormWrapper>
@@ -123,12 +137,15 @@ const TransferDetails = ({
         <StyledDiv>
           <Typography>Iznos:</Typography>
           <StyledParagraph>
-            {iznos && (parseInt(iznos, 10) / kurs) * provizija} {naRacunValuta}
+            {iznos &&
+              ((parseInt(iznos, 10) * kurs) * (1 - provizija)).toFixed(3)}{" "}
+
+            {naRacunValuta}
           </StyledParagraph>
         </StyledDiv>
         <StyledDiv>
           <Typography>Kurs:</Typography>
-          <StyledParagraph>{kurs}</StyledParagraph>
+          <StyledParagraph>{kurs.toFixed(3)}</StyledParagraph>
         </StyledDiv>
         <StyledDiv>
           <Typography>Provizija:</Typography>

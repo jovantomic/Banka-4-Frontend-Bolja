@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Swal from 'sweetalert2';
 import { makeApiRequest, makeGetRequest } from '../../utils/apiRequest';
@@ -56,21 +56,10 @@ export default function DodajKarticu() {
         }
 
         const uspesno = await makeApiRequest(BankRoutes.cards_create, 'POST', { name, type, bankAccountNumber, cardLimit }, false, true);
-        if (await uspesno.text() == "Uspesno kreirana kartica") {
-            Swal.fire({
-                icon: 'success',
-                title: 'Uspešno kreirana kartica!',
-            }).then(() => {
-                navigate(-1)
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Greška pri kreiranju kartice',
-                text: uspesno?.message || 'Pokušajte ponovo kasnije',
-            });
-        }
-    };
+        const success = (await uspesno.text() === "Uspesno kreirana kartica") ? 1 : 0;
+        window.location.href = "/kartice?success=" + success;
+    }
+
     return (
         <div style={{ padding: '20px' }}>
             <FormControl fullWidth>

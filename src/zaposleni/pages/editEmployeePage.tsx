@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { TextField, Button, Alert, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Grid, Checkbox } from '@mui/material';
+import { TextField, Button, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Grid, Checkbox } from '@mui/material';
 import styled from 'styled-components';
-import { EmployeePermissions, UserRoutes } from '../../utils/types';
+import { EmployeePermissionsV2, UserRoutes } from '../../utils/types';
 import { makeApiRequest, makeGetRequest } from '../../utils/apiRequest';
 import { encodePermissions } from '../../utils/permissions';
 import KAlert from 'utils/alerts';
@@ -57,7 +57,7 @@ const CheckBoxForm = styled.div`
 `
 
 type Permisije = {
-  naziv: EmployeePermissions,
+  naziv: EmployeePermissionsV2,
   vrednost: boolean
 }
 interface editEmployeeData {
@@ -87,13 +87,37 @@ const EditEmployeePage: React.FC = () => {
     permisije: 0,
   });
   const [permissionCheckboxes, setPermissionCheckboxes] = useState<Permisije[]>([
-    { naziv: EmployeePermissions.listanje_korisnika, vrednost: false },
-    { naziv: EmployeePermissions.dodavanje_korisnika, vrednost: false },
-    { naziv: EmployeePermissions.editovanje_korisnika, vrednost: false },
-    { naziv: EmployeePermissions.deaktiviranje_korisnika, vrednost: false },
-    { naziv: EmployeePermissions.kreiranje_racuna, vrednost: false },
-    { naziv: EmployeePermissions.editovanje_racuna, vrednost: false },
-    { naziv: EmployeePermissions.brisanje_racuna, vrednost: false }
+    { naziv: EmployeePermissionsV2.list_users, vrednost: false },
+    { naziv: EmployeePermissionsV2.create_users, vrednost: false },
+    { naziv: EmployeePermissionsV2.edit_users, vrednost: false },
+    { naziv: EmployeePermissionsV2.deactivate_users, vrednost: false },
+    { naziv: EmployeePermissionsV2.list_workers, vrednost: false },
+    { naziv: EmployeePermissionsV2.create_workers, vrednost: false },
+    { naziv: EmployeePermissionsV2.edit_workers, vrednost: false },
+    { naziv: EmployeePermissionsV2.deactivate_workers, vrednost: false },
+    { naziv: EmployeePermissionsV2.list_firms, vrednost: false },
+    { naziv: EmployeePermissionsV2.create_firms, vrednost: false },
+    { naziv: EmployeePermissionsV2.edit_firms, vrednost: false },
+    { naziv: EmployeePermissionsV2.deactivate_firms, vrednost: false },
+    { naziv: EmployeePermissionsV2.list_bank_accounts, vrednost: false },
+    { naziv: EmployeePermissionsV2.create_bank_accounts, vrednost: false },
+    { naziv: EmployeePermissionsV2.deactivate_bank_accounts, vrednost: false },
+    { naziv: EmployeePermissionsV2.list_credits, vrednost: false },
+    { naziv: EmployeePermissionsV2.accept_redits, vrednost: false },
+    { naziv: EmployeePermissionsV2.deny_credits, vrednost: false },
+    { naziv: EmployeePermissionsV2.list_cards, vrednost: false },
+    { naziv: EmployeePermissionsV2.activate_cards, vrednost: false },
+    { naziv: EmployeePermissionsV2.deactivate_cards, vrednost: false },
+    { naziv: EmployeePermissionsV2.block_cards, vrednost: false },
+    { naziv: EmployeePermissionsV2.list_orders, vrednost: false },
+    { naziv: EmployeePermissionsV2.accept_orders, vrednost: false },
+    { naziv: EmployeePermissionsV2.deny_orders, vrednost: false },
+    { naziv: EmployeePermissionsV2.exchange_access, vrednost: false },
+    { naziv: EmployeePermissionsV2.payment_access, vrednost: false },
+    { naziv: EmployeePermissionsV2.action_access, vrednost: false },
+    { naziv: EmployeePermissionsV2.option_access, vrednost: false },
+    { naziv: EmployeePermissionsV2.order_access, vrednost: false },
+    { naziv: EmployeePermissionsV2.termin_access, vrednost: false }
   ])
   const ctx = useContext(Context);
 
@@ -119,13 +143,11 @@ const EditEmployeePage: React.FC = () => {
         }
 
       } catch (error) {
-        console.error('Error fetching user:', error);
       }
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name as string]: value as string });
@@ -144,11 +166,23 @@ const EditEmployeePage: React.FC = () => {
     setFormData({ ...formData, pol: event.target.value as string });
   };
 
-  const handleCheckboxChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const novePermisije = [...permissionCheckboxes];
-    novePermisije[index].vrednost = event.target.checked;
-    setPermissionCheckboxes(novePermisije);
-    setFormData({ ...formData, permisije: encodePermissions(permissionCheckboxes) })
+  const handleCheckboxChange = (group: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    const updatedPermissions = permissionCheckboxes.map(perm => {
+      if (perm.naziv.endsWith(group)) {
+        return { ...perm, vrednost: checked };
+      }
+      return perm;
+    });
+    setPermissionCheckboxes(updatedPermissions);
+    setFormData({ ...formData, permisije: encodePermissions(updatedPermissions) });
+  };
+
+  const handleSingleCheckboxChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const updatedPermissions = [...permissionCheckboxes];
+    updatedPermissions[index].vrednost = event.target.checked;
+    setPermissionCheckboxes(updatedPermissions);
+    setFormData({ ...formData, permisije: encodePermissions(updatedPermissions) });
   };
 
   const handleSumbit = async () => {
@@ -179,16 +213,30 @@ const EditEmployeePage: React.FC = () => {
     }
   }
 
+  // Group checkboxes by the last word in their name
+  const groupPermissions = (permissions: Permisije[]) => {
+    return permissions.reduce((acc, perm) => {
+      const lastWord = perm.naziv.split('_').slice(-1)[0];
+      if (!acc[lastWord]) {
+        acc[lastWord] = [];
+      }
+      acc[lastWord].push(perm);
+      return acc;
+    }, {} as Record<string, Permisije[]>);
+  };
+
+  const groupedPermissions = groupPermissions(permissionCheckboxes);
+
   return (
     <PageWrapper>
       <HeadingText>
         Izmena zaposlenog
       </HeadingText>
       <FormWrapper>
-      {phoneWarning && <KAlert severity="error" exit={() => setPhoneWarning(false)}>Broj telefona je u pogresnom formatu.</KAlert>}
-      {passwordWarning && <KAlert severity="error" exit={() => setPasswordWarning(false)}>Lozinke se ne poklapaju.</KAlert>}
-      {successPopup && <KAlert severity="success" exit={() => setSucessPopup(false)}>Uspesno kreiran.</KAlert>}
-      {emptyWarning && <KAlert severity="error" exit={() => setEmptyWarning(false)}>Popunite neko polje.</KAlert>}
+        {phoneWarning && <KAlert severity="error" exit={() => setPhoneWarning(false)}>Broj telefona je u pogresnom formatu.</KAlert>}
+        {passwordWarning && <KAlert severity="error" exit={() => setPasswordWarning(false)}>Lozinke se ne poklapaju.</KAlert>}
+        {successPopup && <KAlert severity="success" exit={() => setSucessPopup(false)}>Uspesno kreiran.</KAlert>}
+        {emptyWarning && <KAlert severity="error" exit={() => setEmptyWarning(false)}>Popunite neko polje.</KAlert>}
         <FormSeparator>
           <FormSeparatorRow>
             <StyledTextField
@@ -270,24 +318,36 @@ const EditEmployeePage: React.FC = () => {
                 <MenuItem value="F">Komplikovano</MenuItem>
               </StyledSelect>
             </FormControl>
-
           </FormSeparatorRow>
         </FormSeparator>
         <CheckBoxForm>
           <Grid container columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-            {permissionCheckboxes?.map((permisija, index) => (
-              <Grid item xs={6} md={6} lg={6} key={index}>
+            {Object.entries(groupedPermissions).map(([group, perms]) => (
+              <Grid item xs={12} key={group}>
                 <FormControlLabel
-                  control={<Checkbox checked={permisija.vrednost} onChange={handleCheckboxChange(index)} />}
-                  label={`${permissionCheckboxes[index].naziv.replaceAll("_", " ")}`}
+                  control={
+                    <Checkbox
+                      checked={perms.every(perm => perm.vrednost)}
+                      onChange={handleCheckboxChange(group)}
+                    />
+                  }
+                  label={`Select All ${group} permissions`}
                 />
+                {perms.map((permisija, index) => (
+                  <FormControlLabel
+                    key={index}
+                    control={
+                      <Checkbox
+                        checked={permisija.vrednost}
+                        onChange={handleSingleCheckboxChange(permissionCheckboxes.indexOf(permisija))}
+                      />
+                    }
+                    label={`${permisija.naziv.replaceAll("_", " ")}`}
+                  />
+                ))}
               </Grid>
             ))}
           </Grid>
-          {/* <FormControlLabel
-            control={<Checkbox checked={formData.permisije[0].vrednost} onChange={handleCheckboxChange(1)} />}
-            label={`Permisija za `}
-          /> */}
         </CheckBoxForm>
         <ButtonContainer>
           <StyledButton variant="contained" color="primary" onClick={handleSumbit}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Zaposlen from './Zaposlen';
 import NeZaposlen from './NeZaposlen';
 import { getMe } from '../../utils/getMe';
@@ -6,17 +6,15 @@ import Tabela from './TabelaKrediti';
 import { BankRoutes, Kredit } from './../../utils/types';
 import { useNavigate } from 'react-router-dom';
 import { makeGetRequest } from 'utils/apiRequest';
-import { Console } from 'console';
 
 const auth = getMe();
-let emailKorisnikov = "";
+// let emailKorisnikov = "";
 let zaposlen = false;
 if (auth) {
-    emailKorisnikov = auth.sub;
+    // emailKorisnikov = auth.sub;
     if (auth.permission)
         zaposlen = true;
 } else {
-    console.error("Nije moguće dobiti informacije o korisniku.");
 }
 
 function ListaKredita() {
@@ -26,32 +24,29 @@ function ListaKredita() {
 
     useEffect(() => {
         const fetchData = async () => {
-            console.log(BankRoutes.credit_all)
             const approvedData = await makeGetRequest(`${BankRoutes.credit_all}/approved`) as Kredit[];
             const notApprovedData = await makeGetRequest(`${BankRoutes.credit_all}/not_approved`) as Kredit[];
 
             setKrediti(approvedData);
 
-            console.log(approvedData);
             let data = [] as Kredit[];
             data = data.concat(notApprovedData?.map(kredit => ({ ...kredit, status: 'ne odobren' })));
             data = data.concat(approvedData?.map(kredit => ({ ...kredit, status: 'odobren' })));
 
             setKredit(data);
-            
-            console.log(notApprovedData);
         }
         fetchData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const posalji = () => {
-        // Implementacija posalji funkcije
-    };
+    // const posalji = () => {
+    //     // Implementacija posalji funkcije
+    // };
 
     const handleRedClick = (kredit: Kredit) => {
         localStorage.setItem('selectedKredit', JSON.stringify(kredit));
 
-        if (kredit?.status != 'ne odobren') {
+        if (kredit?.status !== 'ne odobren') {
             navigate(`/pojedinacniKredit`);
         }
     };

@@ -56,7 +56,6 @@ const AkcijePage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [filter, setFilter] = useState('');
   const [stocks, setStocks] = useState([]);
-  const [userStocks, setUserStocks] = useState([]);
   const ctx = useContext(Context);
 
   const handleChange = (event: React.SyntheticEvent<unknown>, newValue: number) => {
@@ -91,11 +90,11 @@ const AkcijePage: React.FC = () => {
           setStocks(stocks);
         }
       } catch (error) {
-        console.error('Error fetching user list:', error);
       }
     };
     fetchData();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
