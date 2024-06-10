@@ -91,7 +91,7 @@ const OrdersPageKorisnici: React.FC = () => {
           navigate("/NewOrder");
         }}
       >
-        Dodaj Karticu
+        Dodaj porudžbinu
       </ActionButton>
       <StyledHeading variant="h4">Porudžbine</StyledHeading>
       {error && <Alert severity="error">{error}</Alert>}
