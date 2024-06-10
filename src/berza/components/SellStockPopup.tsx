@@ -18,7 +18,7 @@ const SellStockPopup: React.FC<SellStockPopupProps> = ({ open, stock, onClose })
             <DialogActions>
                 <Button onClick={onClose}>Ne</Button>
                 <Button
-                    onClick={() => {
+                    onClick={async () => {
                         // Add your sell logic here
                         onClose();
                     }}

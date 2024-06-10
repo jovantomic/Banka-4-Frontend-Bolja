@@ -22,7 +22,7 @@ const MakeOfferPopup: React.FC<MakeOfferPopupProps> = ({ open, stock, onClose })
             <DialogTitle>Napravi ponudu</DialogTitle>
             <DialogContent>
                 <p>Unseite vasu ponudu za {stock.ticker}:</p>
-                <br/>
+                <br />
                 <TextField
                     label="Offer Amount"
                     value={offerAmount}
