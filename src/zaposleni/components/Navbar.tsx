@@ -17,7 +17,7 @@ import { EmployeePermissionsV2 } from "utils/types";
 import { jwtDecode } from "jwt-decode";
 
 const StyledAppBar = styled(AppBar)`
-  background-color: #23395b !important;
+  background-color: #99393b !important;
 `;
 
 const StyledLink = styled(Link)`
@@ -247,7 +247,7 @@ function Navbar() {
             >
 
               <MenuItem onClick={() => { navigate('/akcije'); setAnchorEl(null) }}>Akcije</MenuItem>
-              <MenuItem onClick={() => { navigate('/terminski'); setAnchorEl(null) }}>Terminski</MenuItem>
+              {hasPermission(getMe()!.permission, [EmployeePermissionsV2.termin_access]) ? <MenuItem onClick={() => { navigate('/terminski'); setAnchorEl(null) }}>Terminski</MenuItem>: null}
               {showPorudzbine1 && (
               <MenuItem onClick={() => { navigate('/listaPorudzbina'); setAnchorEl(null) }}>Prihvatanje porudzbina</MenuItem>
             )}
