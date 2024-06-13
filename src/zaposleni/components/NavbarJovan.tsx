@@ -140,7 +140,7 @@ function ResponsiveAppBar() {
   const jwt = getMe();
 
   return (
-    <AppBar position="static"sx={{ bgcolor: "pink" }} >
+    <AppBar position="static"sx={{ bgcolor: "red" }} >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           
