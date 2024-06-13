@@ -79,36 +79,47 @@ const StyledImage = styled.img`
   width: 100%;
   height: 100%;
 `;
+const NavItems = styled(Box)`
+  flex-grow: 1; //was 1
+  display: flex;
+  margin-left: 20px;
+  gap: 10px;
+`;
 
+const NavUser = styled(Box)`
+  flex-grow: 0;
+`;
 
 const StyledLink = styled(Link)`
   color: white;
-  font-size: 25px;
+  font-size: 21px;
   text-decoration: none;
   padding: 6px 10px;
   &:hover {
-    background-color: #2c4975ea;
+    background-color: #5B0000;
     padding-bottom: 4px;
     border-bottom: 2px solid white;
   }
 `;
 
 const DropdownButton = styled.div`
-  color: white !important;
-  font-size: 25px !important;
-  text-decoration: none !important;
-  padding: 4px 10px !important;
-  font-weight: normal !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  color: white;
+  font-size: 21px;
+  text-decoration: none;
+  padding: 6px 10px;
   &:hover {
-    background-color: #2c4975ea;
+    background-color: #5B0000;
     padding-bottom: 4px;
     border-bottom: 2px solid white;
   }
 `;
 
 function ResponsiveAppBar() {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const navigate = useNavigate();
@@ -126,7 +137,7 @@ function ResponsiveAppBar() {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
-  };
+  };  
 
   const handleLogout = () => {
     localStorage.removeItem('si_jwt');
@@ -140,7 +151,7 @@ function ResponsiveAppBar() {
   const jwt = getMe();
 
   return (
-    <AppBar position="static"sx={{ bgcolor: "red" }} >
+    <AppBar position="static"sx={{ bgcolor: "#990000" }} >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           
@@ -235,17 +246,85 @@ function ResponsiveAppBar() {
               ? pages
                   .filter((page) => checkUserPermissions(page.permissions))
                   .map((page) => (
-                    <Button
+                    <StyledLink
                       key={page.name}
                       onClick={handleCloseNavMenu}
-                      sx={{ my: 2, color: 'white', display: 'block' }}
-                      component={Link}
+                      
+                     
                       to={page.path}
                     >
                       {page.name}
-                    </Button>
+                    </StyledLink>
                   ))
               : null}
+               {checkNoPermissions() && (
+              <StyledLink key={"Plaćanja"} to={"/placanja"}>
+                {"Plaćanja"}
+              </StyledLink>
+              )}
+            {checkNoPermissions() && (<StyledLink key={"ATM"} to={"/atm"}>
+              {"ATM"}
+            </StyledLink>
+
+            )}
+            {checkNoPermissions() && (<StyledLink key={"Menjačnica"} to={"/menjacnica"}>
+              {"Menjačnica"}
+            </StyledLink>
+
+            )}
+            {checkNoPermissions() && (
+              <StyledLink key={"Verifikacija"} to={"/verifikacija"}>
+                {"Verifikacija"}
+              </StyledLink>
+            )}
+            {checkNoPermissions() && (
+              <StyledLink key={"Kartice"} to={"/kartice"}>
+                {"Kartice"}
+              </StyledLink>
+            )}
+            {checkNoPermissions() && (
+              <StyledLink key={"Krediti"} to={"/listaKredita"}>
+                {"Krediti"}
+              </StyledLink>
+            )}
+            {(checkNoPermissions() || checkHartijePermissions()) && (
+              <StyledLink key={"Hartije"} to={"/hartije"} style={{ margin: ' 0', color: 'white', display: 'block' }}>
+                {"Hartije"}
+              </StyledLink>
+            )}
+            <DropdownButton
+              id="basic-button"
+              aria-controls={open ? "basic-menu" : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? "true" : undefined}
+              onClick={handleClick}
+              style={{ margin: '  0', color: 'white', display: 'block' }}
+            >
+              Berza
+            </DropdownButton>
+            
+            <Menu
+              id="basic-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={() => setAnchorEl(null)}
+              MenuListProps={{
+                "aria-labelledby": "basic-button",
+              }}
+            >
+
+              <MenuItem onClick={() => { navigate('/akcije'); setAnchorEl(null) }}>Akcije</MenuItem>
+              {hasPermission(getMe()!.permission, [EmployeePermissionsV2.termin_access]) ? <MenuItem onClick={() => { navigate('/terminski'); setAnchorEl(null) }}>Terminski</MenuItem>: null}
+              {showPorudzbine1 && (
+              <MenuItem onClick={() => { navigate('/listaPorudzbina'); setAnchorEl(null) }}>Prihvatanje porudzbina</MenuItem>
+            )}
+
+            {(showPorudzbine2 || user) && (
+               <MenuItem onClick={() => { navigate('/listaPorudzbinaKorisnici'); setAnchorEl(null) }}>Porudzbine</MenuItem>
+            )}
+            </Menu>
+          
+          
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>

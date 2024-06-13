@@ -83,11 +83,12 @@ const LoginPage = () => {
     return (
         //added inline style
 
-        <StyledContainerLogReg component="main" maxWidth="sm">
+        <StyledContainerLogReg component="main" maxWidth="sm"  >
             <style type="text/css">
                 {`
                     body {
-                        background-color: #82b2ff;
+                         background-image: url("backgground.jpg");
+                          background-size: cover;
                     }
                 `}
             </style>
