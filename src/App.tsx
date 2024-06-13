@@ -3,6 +3,7 @@ import UserListPage from './zaposleni/pages/userListPage'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import UserInfoTable from './zaposleni/pages/userPage';
 import Navbar from './zaposleni/components/Navbar';
+import ResponsiveAppBar from './zaposleni/components/NavbarJovan';
 import CreateUserPage from './zaposleni/pages/createUserPage';
 import EditUserPage from './zaposleni/pages/editUserPage';
 import CreateAccountPage from './zaposleni/pages/createAccountPage';
@@ -56,6 +57,7 @@ import ProfitPage from "profit/ProfitPage";
 import ATMPage from 'korisnici/pages/ATMPage';
 import OtcPage from 'berza/pages/OtcPage';
 import {permissionMap} from 'utils/permissions';
+import NavbarJovan from './zaposleni/components/NavbarJovan';
 
 const fadeIn = keyframes`
   from {
@@ -176,7 +178,7 @@ function App() {
             ))}
         </AlertWrapperWrapper>
         <BrowserRouter>
-          {auth?.id && <Navbar></Navbar>}
+          {auth?.id && <NavbarJovan/>}
           <Routes>
             <Route
               path="/"

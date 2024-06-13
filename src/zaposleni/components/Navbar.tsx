@@ -168,7 +168,7 @@ function Navbar() {
   const jwt = getMe();
 
   return (
-    <StyledAppBar position="static">
+    <StyledAppBar position="static" className=" background-color: #54000">
       <Container maxWidth="xl">
         <Toolbar>
           <ImgContainer>
