@@ -6,6 +6,31 @@ import { UserRoutes } from 'utils/types';
 import { Context } from 'App';
 
 
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  width: '527px !important',
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: 'initial',
+    },
+    '&:hover fieldset': {
+      borderColor: '#EF2C1A', // Boja obruba prilikom hover-a
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#EF2C1A', // Boja obruba prilikom fokusa
+    },
+    '&.Mui-focused': {
+      backgroundColor: 'transparent', // Boja obruba prilikom fokusa
+    },
+  },
+  '& .MuiInputLabel-root': {
+    color: 'initial',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: '#EF2C1A', // Boja label-e prilikom fokusa
+  },
+}));
+
 const PageWrapper = styled.div`
   text-align: 'center';
   margin-top: 60px;
@@ -78,7 +103,7 @@ const ResetPasswordPage = () => {
       <h2>Stranica za resetovanje šifre</h2>
 
       <FormWrapper>
-        <TextField
+        <StyledTextField
           type="email"
           error={!!email && !emailValid}
           fullWidth
@@ -93,7 +118,7 @@ const ResetPasswordPage = () => {
           Pošalji zahtev
         </Button>
 
-        <TextField
+        <StyledTextField
           type="text"
           error={!!activationCode && !activationCodeValid}
           fullWidth
@@ -104,7 +129,7 @@ const ResetPasswordPage = () => {
           onChange={(e) => setActivationCode(e.target.value)}
           onBlur={validateActivationCode}
         />
-        <TextField
+        <StyledTextField
           type="password"
           error={!!newPassword && !passwordValid}
           fullWidth
@@ -116,8 +141,13 @@ const ResetPasswordPage = () => {
           onBlur={validatePassword}
         />
         <Button
-          disabled={!activationCodeValid || !passwordValid}
+          //disabled={!activationCodeValid || !passwordValid}
           onClick={resetPassword}
+          sx={{ mt: 3, mb: 2  ,color:'white', backgroundColor:'#AC190C',
+            '&:hover': {
+                backgroundColor: '#EF2C1A', 
+              },
+         }}
         >
           Restartuj šifru
         </Button>

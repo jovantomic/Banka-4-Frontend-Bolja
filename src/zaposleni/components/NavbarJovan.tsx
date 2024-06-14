@@ -272,7 +272,7 @@ function ResponsiveAppBar() {
             </StyledLink>
 
             )}
-            {checkNoPermissions() && (
+            { checkNoPermissions() && (
               <StyledLink key={"Verifikacija"} to={"/verifikacija"}>
                 {"Verifikacija"}
               </StyledLink>

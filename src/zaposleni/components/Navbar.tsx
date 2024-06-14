@@ -17,7 +17,7 @@ import { EmployeePermissionsV2 } from "utils/types";
 import { jwtDecode } from "jwt-decode";
 
 const StyledAppBar = styled(AppBar)`
-  background-color: #23395b !important;
+  background-color: #99393b !important;
 `;
 
 const StyledLink = styled(Link)`
@@ -168,7 +168,7 @@ function Navbar() {
   const jwt = getMe();
 
   return (
-    <StyledAppBar position="static" className=" background-color: #54000">
+    <StyledAppBar position="static">
       <Container maxWidth="xl">
         <Toolbar>
           <ImgContainer>
